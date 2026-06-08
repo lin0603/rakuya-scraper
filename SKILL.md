@@ -26,8 +26,10 @@ item = page.evaluate("() => window.tmpDataLayer?.itemData")
 - 用 Playwright 開瀏覽器繞過 Cloudflare
 - 從 `tmpDataLayer.itemData` 提取結構化資料
 - 備份完整 HTML 到 `/tmp/rakuya_page.html`
+- 抓取 `og:image` 縮圖
 - 寫入 MongoDB Atlas（`real_estate.listings`）
 - 建立 `source_url` 唯一索引避免重複
+- **🚫 總價超過 500 萬自動跳過不存**
 
 **抓到的欄位：**
 - `title`, `price_total_wan`, `area_total_ping`

@@ -125,6 +125,12 @@ def scrape_and_store(url: str):
         print(f"📸 截圖已存: {screenshot_path}")
         browser.close()
 
+    # 檢查價格是否超過 500 萬
+    price = data.get("price_total_wan", 0)
+    if price and price > 500:
+        print(f"🚫 總價 {price} 萬超過 500 萬，跳過不存")
+        return data
+    
     client, collection = get_collection()
     try:
         result = collection.insert_one(data)
