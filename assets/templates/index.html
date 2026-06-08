@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>房地產物件比較 | Nummi Dev</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 30px;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px 30px;
+            color: white;
+            text-align: center;
+            min-width: 150px;
+        }
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .stat-card .label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        .card-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .card-header h2 {
+            font-size: 1.3rem;
+            color: #333;
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+        .search-box input {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            width: 250px;
+            transition: border-color 0.3s;
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .search-box button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .search-box button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead th {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #dee2e6;
+            position: sticky;
+            top: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+        thead th:hover {
+            background: linear-gradient(135deg, #e9ecef, #dee2e6);
+        }
+        tbody tr {
+            transition: background 0.2s;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        tbody tr:hover {
+            background: #f8f9ff;
+        }
+        tbody td {
+            padding: 15px;
+            color: #333;
+            font-size: 0.95rem;
+        }
+        .price-tag {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-block;
+        }
+        .price-per-ping {
+            color: #6c757d;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin: 2px;
+        }
+        .badge-type {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .badge-age {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        .badge-layout {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .tag {
+            background: #f0f0f0;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            color: #666;
+        }
+        .link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .link-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #666;
+        }
+        @media (max-width: 768px) {
+            header h1 { font-size: 1.8rem; }
+            .card-header { flex-direction: column; align-items: stretch; }
+            .search-box input { width: 100%; }
+            table { font-size: 0.85rem; }
+            tbody td { padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏠 房地產物件比較</h1>
+            <p>自動收集樂屋網資料，輕鬆比價分析</p>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="number">{{ total_count }}</div>
+                <div class="label">總物件數</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">{{ avg_price }}萬</div>
+                <div class="label">平均總價</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">{{ avg_ping }}坪</div>
+                <div class="label">平均坪數</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">{{ avg_ppp }}萬</div>
+                <div class="label">平均單價/坪</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>📋 物件列表</h2>
+                <form class="search-box" method="get" action="/">
+                    <input type="text" name="q" placeholder="搜尋地址、類型..." value="{{ query }}">
+                    <button type="submit">🔍 搜尋</button>
+                </form>
+            </div>
+            {% if listings %}
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>標題</th>
+                            <th>價格</th>
+                            <th>類型</th>
+                            <th>坪數</th>
+                            <th>格局</th>
+                            <th>屋齡</th>
+                            <th>地址</th>
+                            <th>標籤</th>
+                            <th>連結</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in listings %}
+                        <tr>
+                            <td>
+                                <strong>{{ item.title[:30] }}{% if item.title|length > 30 %}...{% endif %}</strong>
+                                <div style="font-size: 0.8rem; color: #999; margin-top: 4px;">
+                                    {{ item.scraped_at[:10] if item.scraped_at else '' }}
+                                </div>
+                            </td>
+                            <td>
+                                {% if item.price_total_wan %}
+                                <span class="price-tag">{{ "{:,.0f}".format(item.price_total_wan) }} 萬</span>
+                                {% if item.area_total_ping and item.area_total_ping > 0 %}
+                                <div class="price-per-ping">
+                                    {{ "{:,.1f}".format(item.price_total_wan / item.area_total_ping) }} 萬/坪
+                                </div>
+                                {% endif %}
+                                {% else %}
+                                <span style="color: #999;">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.property_type %}
+                                <span class="badge badge-type">{{ item.property_type }}</span>
+                                {% endif %}
+                                {% if item.building_age %}
+                                <span class="badge badge-age">{{ item.building_age }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.area_total_ping %}
+                                <span class="badge badge-layout">{{ item.area_total_ping }} 坪</span>
+                                {% else %}
+                                <span style="color: #999;">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.layout_rooms %}
+                                {{ item.layout_rooms }} 房
+                                {% if item.floor_total %}
+                                / {{ item.floor_total }} 樓
+                                {% endif %}
+                                {% else %}
+                                <span style="color: #999;">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.age_years %}
+                                {{ item.age_years }} 年
+                                {% else %}
+                                <span style="color: #999;">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.city or item.district %}
+                                {{ item.city or '' }}{{ item.district or '' }}
+                                {% elif item.address %}
+                                {{ item.address }}
+                                {% else %}
+                                <span style="color: #999;">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="tags">
+                                    {% for tag in (item.tags or [])[:5] %}
+                                    <span class="tag">{{ tag }}</span>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td>
+                                <a href="{{ item.source_url }}" target="_blank" class="link-btn">
+                                    🔗 查看
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <h3>📭 暫無資料</h3>
+                <p>還沒有抓到任何物件，請貼上樂屋網連結開始收集！</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <footer style="text-align: center; color: rgba(255,255,255,0.6); padding: 20px;">
+            <p>Powered by Nummi Dev | MongoDB Atlas + Playwright</p>
+        </footer>
+    </div>
+</body>
+</html>
