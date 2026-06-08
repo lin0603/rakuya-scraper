@@ -131,6 +131,13 @@ def scrape_and_store(url: str):
         print(f"🚫 總價 {price} 萬超過 500 萬，跳過不存")
         return data
     
+    # 檢查是否為農地（純農地跳過，建地保留）
+    title = data.get("title", "")
+    ptype = data.get("property_type", "")
+    if any(kw in title for kw in ["農地"]) or "農地" in ptype:
+        print(f"🚫 農地類型，跳過不存: {title[:20]}...")
+        return data
+    
     client, collection = get_collection()
     try:
         result = collection.insert_one(data)
