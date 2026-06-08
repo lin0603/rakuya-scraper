@@ -65,6 +65,7 @@ def export_to_json():
             "district": item.get("district", ""),
             "city": item.get("city", ""),
             "scraped_at": item.get("scraped_at", ""),
+            "image_url": item.get("image_url", ""),  # 縮圖網址
             "analysis": item.get("analysis", {})  # 加入專業分析報告
         })
     
