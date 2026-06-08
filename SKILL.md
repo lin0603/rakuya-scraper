@@ -62,12 +62,36 @@ playwright install chromium
 
 **啟動後網址：** `http://<本機IP>:5000/`
 
-### 4. 與 OpenClaw 整合
+### 4. 自動更新 GitHub Pages 網站
+
+當群組貼樂屋網連結時，完整自動化流程：
+
+```
+群組貼連結 → 爬蟲 → MongoDB → 匯出 JSON → push 到 GitHub Pages repo → 網站自動更新
+```
+
+**執行：** `scripts/update_website.py`
+
+**流程：**
+1. 從 MongoDB `real_estate.listings` 讀取最新資料
+2. 轉換成前端需要的格式（統一欄位名稱）
+3. 寫入 `listings.json`
+4. 更新 `index.html`（載入 `listings.json`）
+5. `git push` 到 GitHub Pages repo
+6. 網站幾分鐘後自動顯示新物件
+
+**網站顯示：**
+- 手動新增的物件（localStorage）+ 爬取的物件（`listings.json`）混合顯示
+- 爬取物件標示 `🤖 樂屋網` 標籤區分
+- 支援排序（價格、單價、評分）
+
+### 5. 與 OpenClaw 整合
 
 在群組中偵測樂屋網連結時：
 1. 執行 `scrape_rakuya.py <URL>` 爬取
 2. 回傳解析摘要給群組
-3. 資料自動進入 MongoDB，Flask 儀表板同步更新
+3. 執行 `update_website.py` 更新網站
+4. 回傳網站連結給群組
 
 ## 欄位對照表
 
@@ -88,6 +112,7 @@ playwright install chromium
 ## Resources
 
 - `scripts/scrape_rakuya.py` — 爬蟲腳本
-- `scripts/app.py` — Flask 儀表板
-- `assets/templates/index.html` — 儀表板前端模板
+- `scripts/app.py` — Flask 儀表板（本地使用）
+- `scripts/update_website.py` — 自動更新 GitHub Pages 網站
+- `assets/website-template.html` — GitHub Pages 前端模板（含樂屋網資料整合）
 - `references/mongodb-setup.md` — MongoDB Atlas 建置指南

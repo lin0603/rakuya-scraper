@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>嘉義太保 看屋筆記</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent2: #34d399;
+    --danger: #f87171;
+    --border: #334155;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg); color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    padding: 1.2rem 1rem; text-align: center;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 10;
+  }
+  header h1 { margin: 0; font-size: 1.4rem; color: var(--accent); }
+  header p { margin: .3rem 0 0; font-size: .85rem; color: var(--muted); }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 1rem; }
+  .btn {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .6rem 1rem; border: none; border-radius: .5rem;
+    font-size: .95rem; cursor: pointer; transition: .15s;
+  }
+  .btn-primary { background: var(--accent); color: #0f172a; font-weight: 600; }
+  .btn-primary:hover { background: #7dd3fc; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-sm { padding: .35rem .65rem; font-size: .8rem; }
+  .toolbar { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center; }
+  .toolbar select {
+    background: var(--card); color: var(--text); border: 1px solid var(--border);
+    padding: .45rem .7rem; border-radius: .4rem; font-size: .9rem;
+  }
+  .count { margin-left: auto; color: var(--muted); font-size: .85rem; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.6);
+    display: none; align-items: center; justify-content: center;
+    z-index: 20; padding: 1rem;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: .75rem; width: 100%; max-width: 520px;
+    max-height: 90vh; overflow-y: auto; padding: 1.2rem;
+  }
+  .modal h2 { margin: 0 0 1rem; font-size: 1.15rem; color: var(--accent2); }
+  .form-row { display: flex; gap: .7rem; flex-wrap: wrap; margin-bottom: .7rem; }
+  .form-row label { display: block; width: 100%; font-size: .8rem; color: var(--muted); margin-bottom: .2rem; }
+  .form-row input, .form-row select, .form-row textarea {
+    flex: 1; min-width: 120px; background: var(--bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: .4rem;
+    padding: .5rem .6rem; font-size: .9rem;
+  }
+  .form-row textarea { min-width: 100%; min-height: 4rem; resize: vertical; }
+  .form-actions { display: flex; justify-content: flex-end; gap: .5rem; margin-top: 1rem; }
+
+  /* Cards */
+  .grid { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: .6rem;
+    padding: 1rem; position: relative; transition: .15s;
+  }
+  .card:hover { border-color: #475569; }
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: .6rem; }
+  .card-title { font-size: 1.05rem; font-weight: 600; color: var(--accent); word-break: break-all; }
+  .card-actions { display: flex; gap: .3rem; }
+  .tag {
+    display: inline-block; padding: .15rem .5rem; border-radius: 99px;
+    font-size: .75rem; font-weight: 500; margin-right: .3rem;
+  }
+  .tag-price { background: #064e3b; color: var(--accent2); }
+  .tag-unit { background: #1e3a5f; color: var(--accent); }
+  .tag-type-house { background: #312e81; color: #a5b4fc; }
+  .tag-type-land { background: #5c2b0e; color: #fdba74; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .3rem .8rem; margin: .5rem 0; font-size: .85rem; }
+  .info-grid div { color: var(--muted); }
+  .info-grid span { color: var(--text); font-weight: 500; }
+  .rating { color: #fbbf24; letter-spacing: 1px; }
+  .notes { font-size: .8rem; color: var(--muted); margin-top: .5rem; white-space: pre-wrap; }
+  .link { font-size: .8rem; margin-top: .4rem; }
+  .link a { color: var(--accent); text-decoration: none; }
+  .link a:hover { text-decoration: underline; }
+  .empty { text-align: center; color: var(--muted); padding: 3rem 1rem; }
+  .sort-active { border-color: var(--accent) !important; color: var(--accent) !important; }
+
+  @media (max-width: 480px) {
+    .grid { grid-template-columns: 1fr; }
+    .info-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🏠 嘉義太保 · 看屋筆記</h1>
+  <p>比較、記錄、決策 — 買房前不慌</p>
+</header>
+
+<div class="wrap">
+  <div class="toolbar">
+    <button class="btn btn-primary" onclick="openModal()">+ 新增物件</button>
+    <select id="sort" onchange="render()">
+      <option value="newest">最新新增</option>
+      <option value="price-asc">總價低 → 高</option>
+      <option value="price-desc">總價高 → 低</option>
+      <option value="unit-asc">單價低 → 高</option>
+      <option value="unit-desc">單價高 → 低</option>
+      <option value="rating">評分高 → 低</option>
+    </select>
+    <button class="btn btn-ghost btn-sm" onclick="exportJSON()">📥 匯出</button>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importFile').click()">📤 匯入</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(this)">
+    <span class="count" id="count"></span>
+  </div>
+
+  <div id="grid" class="grid"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2 id="modalTitle">新增物件</h2>
+    <input type="hidden" id="editId">
+    <div class="form-row">
+      <div style="flex:2;min-width:200px;">
+        <label>物件名稱 / 地址</label>
+        <input id="fName" placeholder="例如：太保中山路三段 透天">
+      </div>
+      <div style="flex:1;min-width:100px;">
+        <label>類型</label>
+        <select id="fType">
+          <option value="house">房屋</option>
+          <option value="land">土地</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>總價（萬）</label>
+        <input id="fPrice" type="number" placeholder="1280" oninput="calcUnit()">
+      </div>
+      <div>
+        <label>地坪（坪）</label>
+        <input id="fLand" type="number" step="0.1" placeholder="30" oninput="calcUnit()">
+      </div>
+      <div>
+        <label>建坪（坪）</label>
+        <input id="fBuild" type="number" step="0.1" placeholder="45">
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>屋齡（年）</label>
+        <input id="fAge" type="number" step="0.1" placeholder="5">
+      </div>
+      <div>
+        <label>格局</label>
+        <input id="fLayout" placeholder="4房2廳3衛">
+      </div>
+      <div>
+        <label>距高鐵/車站（分）</label>
+        <input id="fDist" type="number" step="0.1" placeholder="10">
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>評分（1-10）</label>
+        <input id="fRating" type="number" min="1" max="10" placeholder="7">
+      </div>
+      <div style="flex:2;">
+        <label>物件連結</label>
+        <input id="fLink" placeholder="https://..."></div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>每坪單價（自動計算）</label>
+        <input id="fUnitPrice" type="text" readonly style="color:var(--muted);" placeholder="-"></div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>備註</label>
+        <textarea id="fNotes" placeholder="採光、周遭環境、屋況、議價空間..."></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+      <button class="btn btn-danger btn-sm" id="delBtn" style="display:none" onclick="deleteItem()">刪除</button>
+      <button class="btn btn-primary" onclick="save()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const LS_KEY = 'taibao-houses';
+let items = [];
+let scrapedItems = []; // 來自樂屋網爬蟲的資料
+
+try { items = JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch(e) {}
+
+function saveLS() {
+  localStorage.setItem(LS_KEY, JSON.stringify(items));
+}
+
+// 載入樂屋網爬取資料
+async function loadScrapedData() {
+  try {
+    const resp = await fetch('listings.json?v=' + Date.now());
+    if (!resp.ok) return;
+    scrapedItems = await resp.json();
+    console.log('已載入樂屋網資料:', scrapedItems.length, '筆');
+    render();
+  } catch(e) {
+    console.log('樂屋網資料載入失敗:', e);
+  }
+}
+
+function uuid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function calcUnit() {
+  const price = parseFloat(document.getElementById('fPrice').value) || 0;
+  const land = parseFloat(document.getElementById('fLand').value) || 0;
+  const build = parseFloat(document.getElementById('fBuild').value) || 0;
+  const area = land || build || 0;
+  const el = document.getElementById('fUnitPrice');
+  if (price && area) {
+    el.value = (price / area).toFixed(1) + ' 萬/坪';
+  } else {
+    el.value = '-';
+  }
+}
+
+function openModal(id) {
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('modalTitle').textContent = id ? '編輯物件' : '新增物件';
+  document.getElementById('delBtn').style.display = id ? 'inline-flex' : 'none';
+  document.getElementById('editId').value = id || '';
+  if (id) {
+    const it = items.find(x => x.id === id);
+    if (!it) return;
+    document.getElementById('fName').value = it.name || '';
+    document.getElementById('fType').value = it.type || 'house';
+    document.getElementById('fPrice').value = it.price || '';
+    document.getElementById('fLand').value = it.land || '';
+    document.getElementById('fBuild').value = it.build || '';
+    document.getElementById('fAge').value = it.age || '';
+    document.getElementById('fLayout').value = it.layout || '';
+    document.getElementById('fDist').value = it.dist || '';
+    document.getElementById('fRating').value = it.rating || '';
+    document.getElementById('fLink').value = it.link || '';
+    document.getElementById('fNotes').value = it.notes || '';
+    calcUnit();
+  } else {
+    ['fName','fType','fPrice','fLand','fBuild','fAge','fLayout','fDist','fRating','fLink','fNotes','fUnitPrice'].forEach(id2 => {
+      document.getElementById(id2).value = id2==='fType'?'house':'';
+    });
+    calcUnit();
+  }
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+function save() {
+  const data = {
+    id: document.getElementById('editId').value || uuid(),
+    name: document.getElementById('fName').value.trim(),
+    type: document.getElementById('fType').value,
+    price: parseFloat(document.getElementById('fPrice').value) || 0,
+    land: parseFloat(document.getElementById('fLand').value) || 0,
+    build: parseFloat(document.getElementById('fBuild').value) || 0,
+    age: parseFloat(document.getElementById('fAge').value) || 0,
+    layout: document.getElementById('fLayout').value.trim(),
+    dist: parseFloat(document.getElementById('fDist').value) || 0,
+    rating: parseFloat(document.getElementById('fRating').value) || 0,
+    link: document.getElementById('fLink').value.trim(),
+    notes: document.getElementById('fNotes').value.trim(),
+    added: Date.now()
+  };
+  if (!data.name) { alert('請填寫物件名稱'); return; }
+  const idx = items.findIndex(x => x.id === data.id);
+  if (idx >= 0) items[idx] = data; else items.push(data);
+  saveLS();
+  closeModal();
+  render();
+}
+
+function deleteItem() {
+  const id = document.getElementById('editId').value;
+  if (!confirm('確定刪除？')) return;
+  items = items.filter(x => x.id !== id);
+  saveLS();
+  closeModal();
+  render();
+}
+
+function stars(n) {
+  n = Math.min(10, Math.max(0, Math.round(n)));
+  return '★'.repeat(n) + '☆'.repeat(10-n);
+}
+
+function fmtNum(n) {
+  return n ? n.toLocaleString('zh-TW') : '-';
+}
+
+function unitPrice(it) {
+  if (it._isScraped) {
+    return it.price_per_ping || '-';
+  }
+  const area = it.land || it.build || 0;
+  if (it.price && area) return (it.price / area).toFixed(1);
+  return '-';
+}
+
+function render() {
+  const sort = document.getElementById('sort').value;
+  
+  // 合併手動新增的 items 和爬取的 scrapedItems
+  const allItems = [...items, ...scrapedItems.map(s => ({
+    ...s,
+    _isScraped: true,
+    id: 'scraped-' + (s.url ? s.url.split('ehid=')[1] || Math.random().toString(36) : Math.random().toString(36))
+  }))];
+  
+  const list = [...allItems];
+  if (sort === 'price-asc') list.sort((a,b) => (a.price || a.price_total || 0) - (b.price || b.price_total || 0));
+  else if (sort === 'price-desc') list.sort((a,b) => (b.price || b.price_total || 0) - (a.price || a.price_total || 0));
+  else if (sort === 'unit-asc') list.sort((a,b) => parseFloat(unitPrice(a)) - parseFloat(unitPrice(b)) || 0);
+  else if (sort === 'unit-desc') list.sort((a,b) => parseFloat(unitPrice(b)) - parseFloat(unitPrice(a)) || 0);
+  else if (sort === 'rating') list.sort((a,b) => (b.rating || 0) - (a.rating || 0));
+  else list.sort((a,b) => (b.added || Date.now()) - (a.added || Date.parse(b[' scraped_at']) || 0));
+
+  const grid = document.getElementById('grid');
+  document.getElementById('count').textContent = `共 ${list.length} 筆`;
+
+  if (!list.length) {
+    grid.innerHTML = '<div class="empty">還沒有物件，點上方「新增物件」開始記錄 👆</div>';
+    return;
+  }
+
+  grid.innerHTML = list.map(it => {
+    const isScraped = it._isScraped;
+    const price = isScraped ? it.price_total : it.price;
+    const area = isScraped ? it.build_ping : (it.land || it.build || 0);
+    const up = isScraped ? it.price_per_ping : unitPrice(it);
+    const typeLabel = isScraped ? (it.subtype || it.type) : (it.type === 'land' ? '土地' : '房屋');
+    const typeClass = isScraped ? 'house' : it.type;
+    const layoutStr = isScraped ? it.layout : (it.layout || '-');
+    const ageStr = isScraped ? (it.age ? it.age + ' 年' : '-') : (it.age ? it.age + ' 年' : '-');
+    const distStr = isScraped ? '-' : (it.dist ? it.dist + ' 分' : '-');
+    const ratingStr = isScraped ? '-' : stars(it.rating);
+    const notesStr = isScraped ? (it.tags ? it.tags.join(' · ') : '') : (it.notes || '');
+    const linkStr = isScraped ? it.url : (it.link || '');
+    const locationStr = isScraped ? `${it.city || ''}${it.district || ''}` : '';
+    
+    return `
+    <div class="card" ${!isScraped ? `onclick="openModal('${it.id}')"` : `onclick="window.open('${linkStr}', '_blank')" style="cursor:pointer;"`}>
+      <div class="card-header">
+        <div>
+          <div class="card-title">${it.name || it.title || ''}</div>
+          <div style="margin-top:.35rem;">
+            <span class="tag tag-type-${typeClass}">${typeLabel}</span>
+            ${isScraped ? '<span class="tag" style="background:#7c3aed;color:#ddd6fe;">🤖 樂屋網</span>' : ''}
+            <span class="tag tag-price">總價 ${fmtNum(price)} 萬</span>
+            <span class="tag tag-unit">每坪 ${up} 萬</span>
+          </div>
+        </div>
+      </div>
+      <div class="info-grid">
+        <div>地坪 <span>${isScraped ? '-' : fmtNum(it.land)} 坪</span></div>
+        <div>建坪 <span>${fmtNum(area)} 坪</span></div>
+        <div>屋齡 <span>${ageStr}</span></div>
+        <div>格局 <span>${layoutStr}</span></div>
+        <div>距車站 <span>${distStr}</span></div>
+        <div>評分 <span class="rating">${ratingStr}</span></div>
+      </div>
+      ${locationStr ? `<div style="font-size:.8rem;color:var(--muted);margin-top:.3rem;">📍 ${locationStr}</div>` : ''}
+      ${notesStr ? `<div class="notes">${notesStr.replace(/</g,'&lt;')}</div>` : ''}
+      ${linkStr ? `<div class="link"><a href="${linkStr.replace(/"/g,'&quot;')}" target="_blank" onclick="event.stopPropagation()">🔗 看物件連結</a></div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(items, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'taibao-houses-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+}
+
+function importJSON(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) throw new Error('格式錯誤');
+      if (!confirm(`匯入 ${data.length} 筆資料，會覆蓋現有 ${items.length} 筆。確定？`)) return;
+      items = data;
+      saveLS();
+      render();
+      alert('匯入成功！');
+    } catch(err) {
+      alert('匯入失敗：' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+loadScrapedData();
+render();
+</script>
+</body>
+</html>
