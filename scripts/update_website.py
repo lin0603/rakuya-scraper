@@ -64,7 +64,8 @@ def export_to_json():
             "tags": item.get("tags", []),
             "district": item.get("district", ""),
             "city": item.get("city", ""),
-            "scraped_at": item.get("scraped_at", "")
+            "scraped_at": item.get("scraped_at", ""),
+            "analysis": item.get("analysis", {})  # 加入專業分析報告
         })
     
     return output
